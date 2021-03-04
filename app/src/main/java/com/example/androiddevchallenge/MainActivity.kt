@@ -16,6 +16,7 @@
 package com.example.androiddevchallenge
 
 import android.os.Bundle
+import android.os.CountDownTimer
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -25,20 +26,45 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.androiddevchallenge.ui.screen.SetupTimer
+import com.example.androiddevchallenge.ui.screen.TimerCountdown
 import com.example.androiddevchallenge.ui.theme.MyTheme
 
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 class MainActivity : AppCompatActivity() {
+
+    private var countDownTimer: CountDownTimer? = null
+    private var countdownSeconds by mutableStateOf(0)
+    private var isTimerRunning by mutableStateOf(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             MyTheme {
-                MyApp()
+                MyApp(
+                    isTimerRunning = isTimerRunning,
+                    countdownSeconds = countdownSeconds,
+                    onStartTimer = { timeInSeconds ->
+                        isTimerRunning = true
+                        countDownTimer?.cancel()
+                        countDownTimer =
+                            object : CountDownTimer((timeInSeconds * 1000).toLong(), 1000) {
+                                override fun onTick(millisUntilFinished: Long) {
+                                    countdownSeconds = millisUntilFinished.toInt() / 1000 + 1
+                                }
+
+                                override fun onFinish() {
+                                    countdownSeconds = 0
+                                }
+                            }
+                        countDownTimer?.start()
+                    },
+                    onStopTimer = { isTimerRunning = false }
+                )
             }
         }
     }
@@ -47,10 +73,22 @@ class MainActivity : AppCompatActivity() {
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
-fun MyApp() {
-    var digits by remember { mutableStateOf(0) }
+fun MyApp(
+    isTimerRunning: Boolean = false,
+    countdownSeconds: Int = 0,
+    onStartTimer: ((Int) -> Unit)? = null,
+    onStopTimer: (() -> Unit)? = null
+) {
     Surface(color = MaterialTheme.colors.background) {
-        SetupTimer(digits) { digits = it }
+        if (!isTimerRunning) {
+            SetupTimer {
+                onStartTimer?.invoke(it)
+            }
+        } else {
+            TimerCountdown(countdownSeconds = countdownSeconds) {
+                onStopTimer?.invoke()
+            }
+        }
     }
 }
 
@@ -60,7 +98,7 @@ fun MyApp() {
 @Composable
 fun LightPreview() {
     MyTheme {
-        MyApp()
+        MyApp {}
     }
 }
 
@@ -70,6 +108,6 @@ fun LightPreview() {
 @Composable
 fun DarkPreview() {
     MyTheme(darkTheme = true) {
-        MyApp()
+        MyApp {}
     }
 }

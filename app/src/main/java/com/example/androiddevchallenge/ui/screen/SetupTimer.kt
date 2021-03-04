@@ -18,6 +18,7 @@ package com.example.androiddevchallenge.ui.screen
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -37,30 +38,49 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Backspace
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.androiddevchallenge.extensions.appendLeadingZero
 import com.example.androiddevchallenge.extensions.toTimerData
 
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
-fun SetupTimer(digits: Int, onValueChanged: (Int) -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize()) {
+fun SetupTimer(onStartTimer: (Int) -> Unit) {
+    var digits by remember { mutableStateOf(0) }
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize()
+    ) {
         TimerInputPreview(digits) {
-            onValueChanged(digits / 10)
+            digits /= 10
         }
         NumPad { newValue ->
             val newDigitsValue = digits * 10 + newValue
             if (newDigitsValue < MaxValueInput) {
-                onValueChanged(newDigitsValue)
+                digits = newDigitsValue
             }
         }
-        AnimatedVisibility(digits > 0) {
-            FloatingActionButton(onClick = { /*TODO*/ }, modifier = Modifier.padding(16.dp)) {
+        AnimatedVisibility(visible = digits > 0) {
+            FloatingActionButton(
+                onClick = {
+                    val timeInSeconds = digits.toTimerData(100).getTotalSeconds()
+                    onStartTimer(timeInSeconds)
+                    digits = 0
+                },
+                modifier = Modifier.padding(16.dp)
+            ) {
                 Icon(imageVector = Icons.Default.PlayArrow, contentDescription = "Start")
             }
+        }
+        AnimatedVisibility(visible = digits == 0) {
+            Spacer(modifier = Modifier.size(88.dp))
         }
     }
 }
@@ -84,9 +104,6 @@ fun TimerInputPreview(digits: Int, onDeleteDigit: () -> Unit) {
                 Icon(imageVector = Icons.Default.Backspace, contentDescription = "Delete")
             }
         }
-        AnimatedVisibility(visible = digits == 0) {
-            Spacer(modifier = DefaultIconSizeModifier)
-        }
     }
 }
 
@@ -107,29 +124,17 @@ private fun NumPad(onNumberClicked: (Int) -> Unit) {
     }
 }
 
-@ExperimentalAnimationApi
-@ExperimentalFoundationApi
-@Preview(showBackground = true)
-@Composable
-fun SetupTimerPreview() {
-    SetupTimer(digits = 12345) {}
-}
-
 private fun Int.toTimerPreview(): String {
     val data = this.toTimerData(100)
     return StringBuilder()
-        .append(data.hours.toTimerFormat())
+        .append(data.hours.appendLeadingZero())
         .append("h ")
-        .append(data.minutes.toTimerFormat())
+        .append(data.minutes.appendLeadingZero())
         .append("m ")
-        .append(data.seconds.toTimerFormat())
+        .append(data.seconds.appendLeadingZero())
         .append("s")
         .toString()
 }
 
-private fun Int.toTimerFormat(): String =
-    if (this < 10) "0$this" else toString()
-
 private const val MaxValueInput = 1000000
 private val NumPadItemSize = 56.dp
-private val DefaultIconSizeModifier = Modifier.size(48.dp)

@@ -23,3 +23,6 @@ fun Int.toTimerData(base: Int = 60): TimerData {
     val seconds = this % base
     return TimerData(hours, minutes, seconds)
 }
+
+fun Int.appendLeadingZero(): String =
+    if (this < 10) "0$this" else toString()

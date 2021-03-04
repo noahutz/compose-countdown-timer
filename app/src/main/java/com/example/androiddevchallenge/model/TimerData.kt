@@ -15,4 +15,6 @@
  */
 package com.example.androiddevchallenge.model
 
-data class TimerData(val hours: Int, val minutes: Int, val seconds: Int)
+data class TimerData(val hours: Int, val minutes: Int, val seconds: Int) {
+    fun getTotalSeconds(): Int = hours * 60 * 60 + minutes * 60 + seconds
+}
