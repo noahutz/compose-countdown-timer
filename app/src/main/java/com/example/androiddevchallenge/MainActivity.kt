@@ -18,13 +18,21 @@ package com.example.androiddevchallenge
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.androiddevchallenge.ui.screen.SetupTimer
 import com.example.androiddevchallenge.ui.theme.MyTheme
 
+@ExperimentalAnimationApi
+@ExperimentalFoundationApi
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,14 +44,18 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-// Start building your app here!
+@ExperimentalAnimationApi
+@ExperimentalFoundationApi
 @Composable
 fun MyApp() {
+    var digits by remember { mutableStateOf(0) }
     Surface(color = MaterialTheme.colors.background) {
-        Text(text = "Ready... Set... GO!")
+        SetupTimer(digits) { digits = it }
     }
 }
 
+@ExperimentalAnimationApi
+@ExperimentalFoundationApi
 @Preview("Light Theme", widthDp = 360, heightDp = 640)
 @Composable
 fun LightPreview() {
@@ -52,6 +64,8 @@ fun LightPreview() {
     }
 }
 
+@ExperimentalAnimationApi
+@ExperimentalFoundationApi
 @Preview("Dark Theme", widthDp = 360, heightDp = 640)
 @Composable
 fun DarkPreview() {
