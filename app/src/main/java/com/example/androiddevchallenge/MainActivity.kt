@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
 
     private var countDownTimer: CountDownTimer? = null
     private var countdownSeconds by mutableStateOf(0)
+    private var countdownSecondsInitial by mutableStateOf(0)
     private var isTimerRunning by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +49,9 @@ class MainActivity : AppCompatActivity() {
                 MyApp(
                     isTimerRunning = isTimerRunning,
                     countdownSeconds = countdownSeconds,
+                    countdownSecondsInitial = countdownSecondsInitial,
                     onStartTimer = { timeInSeconds ->
+                        countdownSecondsInitial = timeInSeconds
                         isTimerRunning = true
                         countDownTimer?.cancel()
                         countDownTimer =
@@ -76,6 +79,7 @@ class MainActivity : AppCompatActivity() {
 fun MyApp(
     isTimerRunning: Boolean = false,
     countdownSeconds: Int = 0,
+    countdownSecondsInitial: Int = 0,
     onStartTimer: ((Int) -> Unit)? = null,
     onStopTimer: (() -> Unit)? = null
 ) {
@@ -85,7 +89,10 @@ fun MyApp(
                 onStartTimer?.invoke(it)
             }
         } else {
-            TimerCountdown(countdownSeconds = countdownSeconds) {
+            TimerCountdown(
+                countdownSeconds = countdownSeconds,
+                countdownPercent = countdownSeconds.toFloat() / countdownSecondsInitial.toFloat()
+            ) {
                 onStopTimer?.invoke()
             }
         }
